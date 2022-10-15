@@ -1,0 +1,109 @@
+version: '3.3'
+services:
+  rabbitmq:
+    image: rabbitmq:3.9-management
+    container_name: rabbitmq  
+    restart: always
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: /
+#    volumes:
+  #    - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+    #  - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      #- ./rabbitmq/rabbitmq-defs.json:/etc/rabbitmq/rabbitmq-defs.json
+    network_mode: "host"
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"  
+    network_mode: "host"
+  eurekaserver:
+    image: eurekaserver
+    container_name: eurekaserver
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    #environment:
+      #- eureka.instance.hostname=eurekaserver
+      #- eureka.client.serviceUrl.defaultZone=http://eurekaserver:8761/eureka/
+    network_mode: "host"
+  gatewayservice:
+    image: gatewayservice
+    container_name: gatewayservice
+    #environment: 
+      #- eureka.client.serviceUrl.defaultZone=http://eurekaserver:8761/eureka/
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eurekaserver
+    network_mode: "host"
+  personservice:
+    image: personservice
+    container_name: personservice
+    #environment: 
+      #- SPRING_RABBITMQ_HOST=rabbitmq
+      #- eureka.client.serviceUrl.defaultZone=http://eurekaserver:8761/eureka/
+      #- spring.rabbitmq.host=rabbitmq
+      #- spring.data.mongodb.host=mongodb
+    build:
+      context: ./person-service
+      dockerfile: Dockerfile
+    ports:
+      - "8050:8050"
+    depends_on:
+      - rabbitmq
+      - mongodb
+      - eurekaserver
+    network_mode: "host"
+  sellerservice:
+    image: sellerservice
+    container_name: sellerservice
+    #environment: 
+      #- SPRING_RABBITMQ_HOST=rabbitmq
+      #- eureka.client.serviceUrl.defaultZone=http://eurekaserver:8761/eureka/
+      #- spring.rabbitmq.host=rabbitmq
+      #- spring.data.mongodb.host=mongodb
+    build:
+      context: ./seller-service
+      dockerfile: Dockerfile
+    ports:
+      - "8060:8060"
+    depends_on:
+      - rabbitmq
+      - mongodb
+      - eurekaserver
+    network_mode: "host"
+  buyerservice:
+    image: buyerservice
+    container_name: buyerservice
+    #environment: 
+      #- SPRING_RABBITMQ_HOST=rabbitmq
+      #- eureka.client.serviceUrl.defaultZone=http://eurekaserver:8761/eureka/
+      #- spring.rabbitmq.host=rabbitmq
+      #- spring.data.mongodb.host=mongodb
+    build:
+      context: ./buyer-service
+      dockerfile: Dockerfile
+    ports:
+      - "8070:8070"
+    depends_on:
+      - rabbitmq
+      - mongodb
+      - eurekaserver
+    network_mode: "host"
+    #networks:
+      #- eauctionnetwork
+#networks:
+  #eauctionnetwork:
+   # name: eauctionnetwork
+   # driver: bridge
