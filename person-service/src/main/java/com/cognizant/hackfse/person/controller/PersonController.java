@@ -133,6 +133,11 @@ public class PersonController {
 		return new ResponseEntity<>(person, HttpStatus.OK);
 	}
 
+	@GetMapping("/api/v1/person/all")
+	public ResponseEntity<String> getAllPerson() {
+		return new ResponseEntity<>("hi", HttpStatus.OK);
+	}
+	
 	@PostMapping("/api/v1/person/authenticate")
 	public ResponseEntity<JwtAuthenticationResponse> authenticate(
 			@Valid @RequestBody AuthenticateRequest authenticateRequest) {
